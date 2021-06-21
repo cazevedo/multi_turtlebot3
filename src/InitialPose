@@ -1,0 +1,98 @@
+#! /usr/bin/env python3
+import rospy
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from std_msgs.msg import Bool
+from tf.transformations import euler_from_quaternion
+
+class InitPosePublisher(object):
+    def __init__(self, robot_names, pose_stamped):
+        self.pose_pub_list = []
+        for r_name in robot_names:
+            self.pose_pub_list.append(rospy.Publisher('/'+r_name+'/initialpose', PoseWithCovarianceStamped, queue_size=1))
+        self.pose_stamped = pose_stamped
+        self.robot_names = robot_names
+
+    def pub(self):
+        for robot_index, pose_pub in enumerate(self.pose_pub_list):
+            rate = rospy.Rate(10)  # 10hz
+            while not rospy.is_shutdown():
+                connections = pose_pub.get_num_connections()
+                rospy.loginfo('Connections of Pub #%d: %d', robot_index, connections)
+                if connections > 0:
+                    pose_pub.publish(self.pose_stamped[robot_index])
+                    rospy.loginfo('Initial Pose Published for '+self.robot_names[robot_index])
+                    break
+                rate.sleep()
+
+class ChargingPublisher(object):
+    def __init__(self, robot_names, is_charging):
+        self.charging_pub_list = []
+        self.is_charging = []
+        for index, r_name in enumerate(robot_names):
+            self.charging_pub_list.append(rospy.Publisher('/'+r_name+'/battery_mockup/is_charging', Bool, queue_size=1))
+            isc = Bool()
+            isc.data = is_charging[index]
+            self.is_charging.append(isc)
+
+        self.robot_names = robot_names
+
+    def pub(self):
+        for robot_index, charging_pub in enumerate(self.charging_pub_list):
+            rate = rospy.Rate(10)  # 10hz
+            while not rospy.is_shutdown():
+                connections = charging_pub.get_num_connections()
+                rospy.loginfo('Connections of Pub #%d: %d', robot_index, connections)
+                if connections > 0:
+                    charging_pub.publish(self.is_charging[robot_index])
+                    rospy.loginfo('Initial Pose Published for '+self.robot_names[robot_index])
+                    break
+                rate.sleep()
+
+
+
+if __name__ == '__main__':
+    try:
+        rospy.init_node('InitialPoseHome')
+
+        # robot_1 initial pose
+        r1_pose_stamped = PoseWithCovarianceStamped()
+        r1_pose_stamped.header.seq = 1
+        r1_pose_stamped.header.stamp = rospy.get_rostime()
+        r1_pose_stamped.header.frame_id = "map"
+        r1_pose_stamped.pose.pose.position.x = -4.046616554260254
+        r1_pose_stamped.pose.pose.position.y = 1.341946005821228
+        r1_pose_stamped.pose.pose.position.z = 0.0
+        r1_pose_stamped.pose.pose.orientation.x = 0.0
+        r1_pose_stamped.pose.pose.orientation.y = 0.0
+        r1_pose_stamped.pose.pose.orientation.z = -0.3290282739593201
+        r1_pose_stamped.pose.pose.orientation.w = 0.9443200701750178
+        r1_pose_stamped.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892326654787]
+
+        print(euler_from_quaternion([0.0, 0.0, -0.3290282739593201, 0.9443200701750178]))
+
+        # robot_2 initial pose
+        r2_pose_stamped = PoseWithCovarianceStamped()
+        r2_pose_stamped.header.seq = 1
+        r2_pose_stamped.header.stamp = rospy.get_rostime()
+        r2_pose_stamped.header.frame_id = "map"
+        r2_pose_stamped.pose.pose.position.x = -4.001023292541504
+        r2_pose_stamped.pose.pose.position.y = -1.68557870388031
+        r2_pose_stamped.pose.pose.position.z = 0.0
+        r2_pose_stamped.pose.pose.orientation.x = 0.0
+        r2_pose_stamped.pose.pose.orientation.y = 0.0
+        r2_pose_stamped.pose.pose.orientation.z = 0.2773226247225481
+        r2_pose_stamped.pose.pose.orientation.w = 0.9607768532895642
+        r2_pose_stamped.pose.covariance = [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853892326654787]
+
+        print(euler_from_quaternion([0.0, 0.0, 0.2773226247225481, 0.9607768532895642]))
+
+        initial_pose = InitPosePublisher(robot_names=['robot_2', 'robot_1'], pose_stamped=[r1_pose_stamped, r2_pose_stamped])
+        initial_pose.pub()
+
+        start_charging = ChargingPublisher(robot_names=['robot_1', 'robot_2'], is_charging=[False, False])
+        start_charging.pub()
+
+
+    except rospy.ROSInterruptException:
+        raise
+

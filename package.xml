@@ -1,0 +1,35 @@
+<package>
+  <name>multi_turtlebot3</name>
+  <version>0.0.5</version>
+  <description>Package that allows spawning and controlling multiple turtlebot3.</description>
+
+  <maintainer email="cguerraazevedo@tecnico.usliboa.pt">Carlos Azevedo</maintainer>
+  <author     email="cguerraazevedo@tecnico.usliboa.pt">Carlos Azevedo</author>
+  <license>BSD</license>
+  <url>https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>rviz</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>rviz</run_depend>
+  <run_depend>turtlebot3_navigation</run_depend>
+  <run_depend>turtlebot3_bringup</run_depend>
+  <run_depend>turtlebot3_description</run_depend>
+  <run_depend>cpr_office_gazebo</run_depend>
+  <run_depend>turtlebot3_navigation</run_depend>
+  <run_depend>turtlebot3_simulations</run_depend>
+  <run_depend>battery_mockup</run_depend>
+  <run_depend>amcl</run_depend>
+  <run_depend>move_base</run_depend>
+  <run_depend>robot_state_publisher2</run_depend>
+</package>

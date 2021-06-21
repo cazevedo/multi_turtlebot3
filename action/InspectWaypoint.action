@@ -1,0 +1,8 @@
+#Goal
+string waypoint
+---
+#Result
+int32 success
+---
+#feedback
+geometry_msgs/Pose pose

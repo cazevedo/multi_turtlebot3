@@ -1,0 +1,59 @@
+<launch>
+  <!-- Common Args and Params -->
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="map_file" default="$(find cpr_office_gazebo)/worlds/home_small_map.yaml"/>
+  <rosparam command="load" file="$(find multi_turtlebot3)/config/home_navigate_pose_goals.yaml" />
+  <rosparam command="load" file="$(find multi_turtlebot3)/config/home_vacuum_pose_goals.yaml" />
+  <node pkg="multi_turtlebot3" type="InitialPose" name="InitialPose" respawn="false" output="screen"/>
+  <!-- <include file="$(find temp_matlab_gspnr_python_interface)/launch/matlab_interface_servers.launch"/> -->
+
+  <!-- Arguments robot_1 -->
+  <arg name="multi_robot_name_1" default="robot_1"/>
+  <arg name="move_forward_only_1" default="false"/>
+
+  <!-- Map server robot_1 -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" ns="$(arg multi_robot_name_1)"/>
+
+  <!-- AMCL robot_1 -->
+  <include file="$(find multi_turtlebot3)/launch/amcl.launch">
+    <arg name="multi_robot_name" value="$(arg multi_robot_name_1)" />
+  </include>
+
+  <!-- move_base robot_1 -->
+  <include file="$(find multi_turtlebot3)/launch/move_base.launch">
+    <arg name="model" value="$(arg model)" />
+    <arg name="move_forward_only" value="$(arg move_forward_only_1)"/>
+    <arg name="multi_robot_name" value="$(arg multi_robot_name_1)" />
+  </include>
+
+  <!-- Execution Action Servers robot_1 -->
+  <node pkg="multi_turtlebot3" type="HomeNavigateActionServer" name="HomeNavigateActionServer" ns="$(arg multi_robot_name_1)" respawn="true" output="screen"/>
+  <node pkg="multi_turtlebot3" type="HomeVacuumActionServer" name="HomeVacuumActionServer" ns="$(arg multi_robot_name_1)" respawn="true" output="screen"/>
+
+  <!-- Arguments robot_2 -->
+  <arg name="multi_robot_name_2" default="robot_2"/>
+  <arg name="move_forward_only_2" default="false"/>
+
+  <!-- Map server robot_1 -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)" ns="$(arg multi_robot_name_2)"/>
+
+  <!-- AMCL robot_1 -->
+  <include file="$(find multi_turtlebot3)/launch/amcl.launch">
+    <arg name="multi_robot_name" value="$(arg multi_robot_name_2)" />
+  </include>
+
+  <!-- move_base robot_1 -->
+  <include file="$(find multi_turtlebot3)/launch/move_base.launch">
+    <arg name="model" value="$(arg model)" />
+    <arg name="move_forward_only" value="$(arg move_forward_only_2)"/>
+    <arg name="multi_robot_name" value="$(arg multi_robot_name_2)" />
+  </include>
+
+  <!-- Execution Action Servers robot_2 -->
+  <node pkg="multi_turtlebot3" type="HomeNavigateActionServer" name="HomeNavigateActionServer" ns="$(arg multi_robot_name_2)" respawn="true" output="screen"/>
+  <node pkg="multi_turtlebot3" type="HomeVacuumActionServer" name="HomeVacuumActionServer" ns="$(arg multi_robot_name_2)" respawn="true" output="screen"/>
+
+  <!-- rviz -->
+  <node pkg="rviz" type="rviz" name="rviz" required="true"
+      args="-d $(find multi_turtlebot3)/rviz/turtlebot3_navigation.rviz"/>
+</launch>

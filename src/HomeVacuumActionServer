@@ -1,0 +1,91 @@
+#! /usr/bin/env python3
+import rospy
+import actionlib
+import tf2_ros
+import tf2_geometry_msgs
+
+from geometry_msgs.msg import Pose
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from std_srvs.srv import Empty
+
+from multi_turtlebot3.msg import NavigateWaypointAction, NavigateWaypointGoal
+
+from multi_turtlebot3.msg import InspectWaypointAction
+from multi_turtlebot3.msg import InspectWaypointGoal
+from multi_turtlebot3.msg import InspectWaypointFeedback
+from multi_turtlebot3.msg import InspectWaypointResult
+
+def transform_pose(input_pose, from_frame, to_frame):
+    tf_buffer = tf2_ros.Buffer()
+    listener = tf2_ros.TransformListener(tf_buffer)
+
+    pose_stamped = tf2_geometry_msgs.PoseStamped()
+    pose_stamped.pose = input_pose
+    pose_stamped.header.frame_id = from_frame
+    pose_stamped.header.stamp = rospy.Time(0)
+
+    try:
+        output_pose_stamped = tf_buffer.transform(pose_stamped, to_frame, rospy.Duration(2))
+        return output_pose_stamped.pose
+
+    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+        raise
+
+class VacuumActionServer(object):
+    def __init__(self, name):
+        # create messages that are used to publish feedback/result
+        self._feedback = InspectWaypointFeedback()
+        self._result = InspectWaypointResult()
+        self._ns = rospy.get_namespace()
+        self._action_name = name
+        self._as = actionlib.SimpleActionServer(self._action_name, InspectWaypointAction, execute_cb=self.execute_cb, auto_start = False)
+
+        self._as.start()
+
+    def execute_cb(self, goal):
+        param_name = "/Vacuum_Waypoints/"+goal.waypoint
+        pose_list = rospy.get_param(param_name)
+
+        rospy.loginfo('%s will inspect %s', self._ns, goal.waypoint)
+
+        for pose_name, pose_goal in pose_list.items():
+            clear_service_name = self._ns+"move_base/clear_costmaps"
+            print(clear_service_name)
+            print("waiting...")
+            rospy.wait_for_service(clear_service_name)
+            print("available")
+            clearcmp = rospy.ServiceProxy(clear_service_name, Empty)
+            print("response")
+            response = clearcmp()
+            print("cleared")
+
+            pose_goal_in_map = Pose()
+
+            pose_goal_in_map.position.x = pose_goal[0]
+            pose_goal_in_map.position.y = pose_goal[1]
+            pose_goal_in_map.position.z = pose_goal[2]
+
+            pose_goal_in_map.orientation.x = pose_goal[3]
+            pose_goal_in_map.orientation.y = pose_goal[4]
+            pose_goal_in_map.orientation.z = pose_goal[5]
+            pose_goal_in_map.orientation.w = pose_goal[6]
+
+            client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+            client.wait_for_server()
+
+            mb_goal = MoveBaseGoal()
+            mb_goal.target_pose.header.frame_id = "map"
+            mb_goal.target_pose.header.stamp = rospy.Time.now()
+            mb_goal.target_pose.pose = pose_goal_in_map
+
+            client.send_goal(mb_goal)
+            wait = client.wait_for_result()
+
+        self._result.success = 1
+        rospy.loginfo('%s: Succeeded' % self._action_name)
+        self._as.set_succeeded(self._result)
+
+if __name__ == '__main__':
+    rospy.init_node('vacuuum')
+    server = VacuumActionServer(rospy.get_name())
+    rospy.spin()

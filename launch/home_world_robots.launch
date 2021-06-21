@@ -1,0 +1,55 @@
+<launch>
+    <!-- Spawn robot_1-->
+    <arg name="multi_robot_name_1" default="robot_1"/>
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="robot_1_x" default="-4.001023292541504"/>
+    <arg name="robot_1_y" default="-1.68557870388031"/>
+    <arg name="robot_1_z" default="0.0"/>
+    <arg name="robot_1_roll"  value="0.0"/>
+    <arg name="robot_1_pitch" value="0.0"/>
+    <arg name="robot_1_yaw"   value="0.5620126128196717"/>
+
+    <param name="/$(arg multi_robot_name_1)/robot_description"
+    command="$(find xacro)/xacro $(find multi_turtlebot3)/urdf/turtlebot3_waffle_robot1.urdf.xacro" />
+
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" ns="$(arg multi_robot_name_1)"
+          args="-urdf -model $(arg multi_robot_name_1) -x $(arg robot_1_x) -y $(arg robot_1_y) -z $(arg robot_1_z) -R $(arg robot_1_roll) -P $(arg robot_1_pitch) -Y $(arg robot_1_yaw) -param /$(arg multi_robot_name_1)/robot_description" />
+
+    <!-- Bring up robot_1-->
+    <include file="$(find multi_turtlebot3)/launch/turtlebot3_bringup.launch">
+      <arg name="model" value="$(arg model)" />
+      <arg name="multi_robot_name" value="$(arg multi_robot_name_1)" />
+    </include>
+
+    <!-- Battery robot_1 -->
+    <include file="$(find multi_turtlebot3)/launch/battery_servers.launch">
+      <arg name="ns" value="$(arg multi_robot_name_1)" />
+    </include>
+
+    <!-- Spawn robot_2-->
+    <arg name="multi_robot_name_2" default="robot_2"/>
+    <arg name="robot_2_x" default="-4.046616554260254"/>
+    <arg name="robot_2_y" default="1.341946005821228"/>
+    <arg name="robot_2_z" default="0.0"/>
+    <arg name="robot_2_roll"  value="0.0"/>
+    <arg name="robot_2_pitch" value="0.0"/>
+    <arg name="robot_2_yaw"   value="-0.6705487370491029"/>
+
+    <param name="/$(arg multi_robot_name_2)/robot_description"
+    command="$(find xacro)/xacro $(find multi_turtlebot3)/urdf/turtlebot3_waffle_robot2.urdf.xacro" />
+
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" ns="$(arg multi_robot_name_2)"
+          args="-urdf -model $(arg multi_robot_name_2) -x $(arg robot_2_x) -y $(arg robot_2_y) -z $(arg robot_2_z) -R $(arg robot_2_roll) -P $(arg robot_2_pitch) -Y $(arg robot_2_yaw) -param /$(arg multi_robot_name_2)/robot_description" />
+
+    <!-- Bring up robot_2-->
+    <include file="$(find multi_turtlebot3)/launch/turtlebot3_bringup.launch">
+      <arg name="model" value="$(arg model)" />
+      <arg name="multi_robot_name" value="$(arg multi_robot_name_2)" />
+    </include>
+
+    <!-- Battery robot_2 -->
+    <include file="$(find multi_turtlebot3)/launch/battery_servers.launch">
+      <arg name="ns" value="$(arg multi_robot_name_2)" />
+    </include>
+
+</launch>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="ns"        default="/"/>
+  <node pkg="multi_turtlebot3" type="CheckBatteryActionServer" name="CheckBatteryActionServer" ns="$(arg ns)" respawn="true" output="screen"/>
+  <node pkg="multi_turtlebot3" type="ChargeActionServer" name="ChargeActionServer" ns="$(arg ns)" respawn="true" output="screen"/>
+
+  <include file="$(find battery_mockup)/ros/launch/battery_mockup.launch">
+    <arg name="ns" value="$(arg ns)" />
+  </include>
+
+</launch>

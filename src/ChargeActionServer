@@ -1,0 +1,73 @@
+#! /usr/bin/env python3
+from random import randint
+
+import rospy
+import actionlib
+
+from std_msgs.msg import Bool
+import sensor_msgs.msg as sensor_msgs
+
+from multi_turtlebot3.msg import ChargeAction
+from multi_turtlebot3.msg import ChargeGoal
+from multi_turtlebot3.msg import ChargeFeedback
+from multi_turtlebot3.msg import ChargeResult
+
+from battery_mockup.srv import *
+
+class ChargeActionServer(object):
+    def __init__(self, name):
+        # create messages that are used to publish feedback/result
+        self._feedback = ChargeFeedback()
+        self._result = ChargeResult()
+        self._ns = rospy.get_namespace()
+        self._action_name = name
+        self._as = actionlib.SimpleActionServer(self._action_name, ChargeAction, execute_cb=self.execute_cb, auto_start = False)
+
+        self._as.start()
+
+    def execute_cb(self, goal):
+        # helper variables
+        r = rospy.Rate(1)
+
+        rospy.loginfo('%s will check its battery' % (self._ns))
+
+        battery_charge_topic = self._ns+"battery_mockup/is_charging"
+
+        print(battery_charge_topic)
+
+        battery_service_name = self._ns+"check_percentage"
+
+        rospy.wait_for_service(battery_service_name)
+
+        pub = rospy.Publisher(battery_charge_topic, Bool, queue_size=1)
+        msg = Bool()
+        msg.data = True
+
+        while pub.get_num_connections() == 0:
+            rospy.loginfo("Waiting for subscriber to connect")
+            r.sleep()
+
+        pub.publish(msg)
+
+        check_percentage = rospy.ServiceProxy(battery_service_name, CheckPercentage)
+
+        charged = False
+        while not charged:
+            response = check_percentage(0)
+            battery_percentage = response.percentage
+            if battery_percentage>0.99:
+                charged = True
+            r.sleep()
+
+        msg.data = False
+        pub.publish(msg)
+
+        self._result.finish = 1
+
+        rospy.loginfo('%s: Succeeded - result' % (self._action_name))
+        self._as.set_succeeded(self._result)
+
+if __name__ == '__main__':
+    rospy.init_node('tb1_Navigate')
+    server = ChargeActionServer(rospy.get_name())
+    rospy.spin()

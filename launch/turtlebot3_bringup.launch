@@ -1,0 +1,17 @@
+<launch>
+  <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="multi_robot_name" default=""/>
+
+  <node pkg="robot_state_publisher2" type="robot_state_publisher2" name="robot_state_publisher2" ns="$(arg multi_robot_name)">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="prefix_tf_with" value="$(arg multi_robot_name)"/>
+    <param name="robot_description" value="/$(arg multi_robot_name)/robot_description"/>
+  </node>
+
+  <!-- <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" ns="$(arg multi_robot_name)">
+    <param name="use_gui" value="false"/>
+    <param name="rate" value="50"/>
+  </node> -->
+
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot3_description)/rviz/model.rviz"/> -->
+</launch>
