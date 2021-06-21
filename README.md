@@ -29,3 +29,19 @@ git clone https://github.com/cazevedo/multi_turtlebot3.git
 ```sh
 catkin build
 ```
+
+# Run
+Terminal #1
+```sh
+roslaunch multi_turtlebot3 home_world.launch
+```
+
+Terminal #2
+```sh
+roslaunch multi_turtlebot3 home_world_robots.launch
+```
+
+Terminal #3
+```sh
+roslaunch multi_turtlebot3 turtlebot3_navigation.launch
+```
