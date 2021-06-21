@@ -23,5 +23,9 @@ git clone https://github.com/cazevedo/robot_state_publisher2.git
 ```
 
 ```sh
+git clone https://github.com/cazevedo/multi_turtlebot3.git
+```
+
+```sh
 catkin build
 ```
